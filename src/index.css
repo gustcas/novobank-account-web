@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-white font-sans text-text-main antialiased;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:focus {
+    -webkit-text-fill-color: #1A2B4A;
+    -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
+    box-shadow: 0 0 0 1000px #ffffff inset;
+    transition: background-color 9999s ease-in-out 0s;
+  }
+}
+
+.brand-loader-container {
+  position: relative;
+  width: 380px;
+  height: 360px;
+  transform: scale(0.28);
+  transform-origin: center;
+}
+
+.brand-loader-bar {
+  position: absolute;
+  background-color: #ffffff;
+  animation: brand-pulse 1.2s infinite ease-in-out;
+}
+
+.brand-loader-center-v {
+  left: 180px;
+  top: 60px;
+  width: 20px;
+  height: 240px;
+  animation-delay: 0s;
+}
+
+.brand-loader-left-v {
+  left: 140px;
+  top: 90px;
+  width: 20px;
+  height: 180px;
+  animation-delay: 0.1s;
+}
+
+.brand-loader-right-v {
+  left: 220px;
+  top: 90px;
+  width: 20px;
+  height: 180px;
+  animation-delay: 0.1s;
+}
+
+.brand-loader-h-mid-l {
+  left: 40px;
+  top: 170px;
+  width: 80px;
+  height: 20px;
+  animation-delay: 0.2s;
+}
+
+.brand-loader-h-mid-r {
+  left: 260px;
+  top: 170px;
+  width: 80px;
+  height: 20px;
+  animation-delay: 0.2s;
+}
+
+.brand-loader-h-top-l {
+  left: 80px;
+  top: 130px;
+  width: 40px;
+  height: 20px;
+  animation-delay: 0.3s;
+}
+
+.brand-loader-h-bot-l {
+  left: 80px;
+  top: 210px;
+  width: 40px;
+  height: 20px;
+  animation-delay: 0.3s;
+}
+
+.brand-loader-h-top-r {
+  left: 260px;
+  top: 130px;
+  width: 40px;
+  height: 20px;
+  animation-delay: 0.3s;
+}
+
+.brand-loader-h-bot-r {
+  left: 260px;
+  top: 210px;
+  width: 40px;
+  height: 20px;
+  animation-delay: 0.3s;
+}
+
+@keyframes brand-pulse {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.95);
+    box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+  }
+}
+
+@media (min-width: 640px) {
+  .brand-loader-container {
+    transform: scale(0.34);
+  }
+}
+
+@media (min-width: 1024px) {
+  .brand-loader-container {
+    transform: scale(0.4);
+  }
+}
