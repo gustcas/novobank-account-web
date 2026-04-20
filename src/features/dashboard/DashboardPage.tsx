@@ -1,29 +1,40 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PageHeader } from "../../components/layout/PageHeader";
 import { PageWrapper } from "../../components/layout/PageWrapper";
 import { BalanceVisibilityToggle } from "../../components/ui/BalanceVisibilityToggle";
 import { BrandLoader } from "../../components/ui/BrandLoader";
 import { Card } from "../../components/ui/Card";
 import { SkeletonBlock } from "../../components/ui/Skeleton";
-import { Table, TBody, Td, THead, Th, Tr } from "../../components/ui/Table";
 import { useAccounts } from "../../hooks/useAccounts";
 import { useTransactions } from "../../hooks/useTransactions";
 import { AccountCard } from "../accounts/AccountCard";
 import { AccountSelector } from "../accounts/AccountSelector";
 import { useAuth } from "../auth/AuthContext";
 import { useSelectedAccount } from "../../hooks/useSelectedAccount";
+import { TransactionHistoryTable } from "../transactions/TransactionHistoryTable";
+import { balanceVisibilityStorage } from "../../utils/storage";
 import { formatCurrency } from "../../utils/formatCurrency";
-import { formatDate } from "../../utils/formatDate";
-import { formatTransactionType } from "../../utils/formatTransactionType";
 
 export const DashboardPage = () => {
   const { user } = useAuth();
-  const [isTotalBalanceVisible, setIsTotalBalanceVisible] = useState(true);
+  const [isTotalBalanceVisible, setIsTotalBalanceVisible] = useState(() => {
+    if (!user?.customerId) {
+      return true;
+    }
+
+    return balanceVisibilityStorage.get(`dashboard-total-${user.customerId}`) !== "false";
+  });
   const { data: accounts = [], isLoading: accountsLoading } = useAccounts(user?.customerId);
   const { selectedAccountId, selectedAccount, setSelectedAccountId } = useSelectedAccount(accounts, user?.customerId);
   const { data: transactions, isLoading: transactionsLoading } = useTransactions(selectedAccountId);
 
   const totalBalance = accounts.reduce((sum, account) => sum + account.balance, 0);
+
+  useEffect(() => {
+    if (user?.customerId) {
+      setIsTotalBalanceVisible(balanceVisibilityStorage.get(`dashboard-total-${user.customerId}`) !== "false");
+    }
+  }, [user?.customerId]);
 
   if (accountsLoading || (selectedAccountId && transactionsLoading)) {
     return (
@@ -36,7 +47,7 @@ export const DashboardPage = () => {
   return (
     <PageWrapper>
       <div className="space-y-8">
-        <PageHeader title={`Bienvenido, ${user?.fullName ?? "cliente"}`} subtitle="Resumen operativo de tus productos y actividad reciente." />
+        <PageHeader title={`Hola, ${user?.fullName ?? "cliente"}`} subtitle="Resumen operativo de tus productos y actividad reciente." />
         <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
           <Card accent>
             <div className="flex items-start justify-between gap-3">
@@ -47,7 +58,17 @@ export const DashboardPage = () => {
               <BalanceVisibilityToggle
                 isVisible={isTotalBalanceVisible}
                 label={isTotalBalanceVisible ? "Ocultar saldo total" : "Mostrar saldo total"}
-                onToggle={() => setIsTotalBalanceVisible((current) => !current)}
+                onToggle={() =>
+                  setIsTotalBalanceVisible((current) => {
+                    const next = !current;
+
+                    if (user?.customerId) {
+                      balanceVisibilityStorage.set(`dashboard-total-${user.customerId}`, next);
+                    }
+
+                    return next;
+                  })
+                }
               />
             </div>
           </Card>
@@ -103,28 +124,7 @@ export const DashboardPage = () => {
               <p className="text-text-muted">La cuenta seleccionada todavia no registra movimientos.</p>
             </Card>
           ) : (
-            <Table>
-              <table className="w-full">
-                <THead>
-                  <tr>
-                    <Th>Fecha</Th>
-                    <Th>Tipo</Th>
-                    <Th>Referencia</Th>
-                    <Th className="text-right">Monto</Th>
-                  </tr>
-                </THead>
-                <TBody>
-                  {transactions?.content.slice(0, 5).map((transaction) => (
-                    <Tr key={`${transaction.accountId}-${transaction.id}-${transaction.reference}`}>
-                      <Td>{formatDate(transaction.createdAt)}</Td>
-                      <Td>{formatTransactionType(transaction.type)}</Td>
-                      <Td>{transaction.reference}</Td>
-                      <Td className="text-right font-mono font-semibold text-slate-900">{formatCurrency(transaction.amount)}</Td>
-                    </Tr>
-                  ))}
-                </TBody>
-              </table>
-            </Table>
+            <TransactionHistoryTable currency={selectedAccount?.currency} transactions={transactions.content.slice(0, 5)} />
           )}
         </section>
       </div>

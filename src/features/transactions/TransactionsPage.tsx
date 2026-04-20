@@ -2,16 +2,12 @@ import { PageHeader } from "../../components/layout/PageHeader";
 import { PageWrapper } from "../../components/layout/PageWrapper";
 import { BrandLoader } from "../../components/ui/BrandLoader";
 import { Card } from "../../components/ui/Card";
-import { Table, TBody, Td, THead, Th, Tr } from "../../components/ui/Table";
 import { useAccounts } from "../../hooks/useAccounts";
 import { useSelectedAccount } from "../../hooks/useSelectedAccount";
 import { useTransactions } from "../../hooks/useTransactions";
-import { formatCurrency } from "../../utils/formatCurrency";
-import { formatDate } from "../../utils/formatDate";
-import { formatTransactionType } from "../../utils/formatTransactionType";
 import { AccountSelector } from "../accounts/AccountSelector";
 import { useAuth } from "../auth/AuthContext";
-import { TransactionStatusBadge } from "./TransactionStatusBadge";
+import { TransactionHistoryTable } from "./TransactionHistoryTable";
 
 export const TransactionsPage = () => {
   const { user } = useAuth();
@@ -47,32 +43,7 @@ export const TransactionsPage = () => {
                 <p className="text-text-muted">No hay transacciones disponibles para la cuenta seleccionada.</p>
               </Card>
             ) : (
-              <Table>
-                <table className="w-full">
-                  <THead>
-                    <tr>
-                      <Th>Fecha</Th>
-                      <Th>Tipo</Th>
-                      <Th>Referencia</Th>
-                      <Th>Estado</Th>
-                      <Th className="text-right">Monto</Th>
-                    </tr>
-                  </THead>
-                  <TBody>
-                    {transactions.content.map((transaction) => (
-                      <Tr key={`${transaction.accountId}-${transaction.id}-${transaction.reference}`}>
-                        <Td>{formatDate(transaction.createdAt)}</Td>
-                        <Td>{formatTransactionType(transaction.type)}</Td>
-                        <Td>{transaction.reference}</Td>
-                        <Td>
-                          <TransactionStatusBadge status={transaction.status} />
-                        </Td>
-                        <Td className="text-right font-mono">{formatCurrency(transaction.amount)}</Td>
-                      </Tr>
-                    ))}
-                  </TBody>
-                </table>
-              </Table>
+              <TransactionHistoryTable currency={selectedAccount?.currency} showStatus transactions={transactions.content} />
             )}
           </div>
         )}

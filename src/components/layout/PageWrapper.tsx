@@ -4,7 +4,7 @@ import { Sidebar } from "./Sidebar";
 import type { ReactNode } from "react";
 
 export const PageWrapper = ({ children }: { children: ReactNode }) => (
-  <div className="min-h-screen bg-white">
+  <div className="min-h-screen bg-white lg:pt-[118px]">
     <Navbar />
     <div className="flex flex-col lg:flex-row">
       <Sidebar />

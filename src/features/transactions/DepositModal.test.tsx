@@ -1,7 +1,7 @@
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { renderWithProviders } from "../../test/test-utils";
 import { server } from "../../test/mocks/server";
 import { DepositModal } from "./DepositModal";
@@ -36,23 +36,24 @@ describe("DepositModal", () => {
     await user.clear(screen.getByLabelText(/monto/i));
     await user.type(screen.getByLabelText(/monto/i), "100");
     await user.click(screen.getByRole("button", { name: /continuar/i }));
-    expect(await screen.findByText(/confirma el depósito/i)).toBeInTheDocument();
+    expect(await screen.findByText(/confirma el deposito/i)).toBeInTheDocument();
   });
 
-  it("should_show_success_message_after_deposit", async () => {
+  it("should_close_modal_after_successful_deposit", async () => {
     const user = userEvent.setup();
-    renderWithProviders(<DepositModal account={account} isOpen onClose={() => undefined} />);
+    const onClose = vi.fn();
+    renderWithProviders(<DepositModal account={account} isOpen onClose={onClose} />);
     await user.clear(screen.getByLabelText(/monto/i));
     await user.type(screen.getByLabelText(/monto/i), "100");
     await user.click(screen.getByRole("button", { name: /continuar/i }));
     await user.click(screen.getByRole("button", { name: /confirmar/i }));
-    expect(await screen.findByText(/depósito completado/i)).toBeInTheDocument();
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
   });
 
   it("should_show_error_detail_from_problem_details_on_422", async () => {
     server.use(
       http.post("http://localhost:8080/api/v1/accounts/:id/transactions/deposits", () =>
-        HttpResponse.json({ detail: "Monto inválido desde backend." }, { status: 422 })
+        HttpResponse.json({ detail: "Monto invalido desde backend." }, { status: 422 })
       )
     );
 
@@ -62,6 +63,6 @@ describe("DepositModal", () => {
     await user.type(screen.getByLabelText(/monto/i), "100");
     await user.click(screen.getByRole("button", { name: /continuar/i }));
     await user.click(screen.getByRole("button", { name: /confirmar/i }));
-    expect(await screen.findByText(/monto inválido desde backend/i)).toBeInTheDocument();
+    expect(await screen.findByText(/monto invalido desde backend/i)).toBeInTheDocument();
   });
 });

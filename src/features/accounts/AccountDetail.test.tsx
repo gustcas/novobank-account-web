@@ -44,7 +44,7 @@ describe("AccountDetail", () => {
         onTransfer={() => undefined}
       />
     );
-    expect(screen.getByText("DEP-001")).toBeInTheDocument();
+    expect(screen.getAllByText("DEP-001").length).toBeGreaterThan(0);
   });
 
   it("should_show_skeleton_while_loading", () => {

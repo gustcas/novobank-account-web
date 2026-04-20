@@ -1,16 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "../../components/ui/Badge";
 import { BalanceVisibilityToggle } from "../../components/ui/BalanceVisibilityToggle";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
-import { Table, TBody, Td, THead, Th, Tr } from "../../components/ui/Table";
 import type { Account } from "../../types/account.types";
 import type { PaginatedTransactions } from "../../types/transaction.types";
+import { balanceVisibilityStorage } from "../../utils/storage";
 import { formatAccountNumber } from "../../utils/formatAccountNumber";
 import { formatAccountStatus } from "../../utils/formatAccountStatus";
 import { formatCurrency } from "../../utils/formatCurrency";
-import { formatDate } from "../../utils/formatDate";
-import { formatTransactionType } from "../../utils/formatTransactionType";
+import { TransactionHistoryTable } from "../transactions/TransactionHistoryTable";
 
 interface AccountDetailProps {
   account: Account;
@@ -21,7 +20,13 @@ interface AccountDetailProps {
 }
 
 export const AccountDetail = ({ account, transactions, onDeposit, onWithdraw, onTransfer }: AccountDetailProps) => {
-  const [isBalanceVisible, setIsBalanceVisible] = useState(true);
+  const [isBalanceVisible, setIsBalanceVisible] = useState(
+    () => balanceVisibilityStorage.get(`account-detail-${account.id}`) !== "false"
+  );
+
+  useEffect(() => {
+    setIsBalanceVisible(balanceVisibilityStorage.get(`account-detail-${account.id}`) !== "false");
+  }, [account.id]);
 
   return (
     <div className="space-y-6">
@@ -36,7 +41,13 @@ export const AccountDetail = ({ account, transactions, onDeposit, onWithdraw, on
             <BalanceVisibilityToggle
               isVisible={isBalanceVisible}
               label={isBalanceVisible ? "Ocultar saldo de la cuenta" : "Mostrar saldo de la cuenta"}
-              onToggle={() => setIsBalanceVisible((current) => !current)}
+              onToggle={() =>
+                setIsBalanceVisible((current) => {
+                  const next = !current;
+                  balanceVisibilityStorage.set(`account-detail-${account.id}`, next);
+                  return next;
+                })
+              }
             />
           </div>
         </div>
@@ -61,34 +72,7 @@ export const AccountDetail = ({ account, transactions, onDeposit, onWithdraw, on
         {!transactions?.content.length ? (
           <div className="p-6 text-text-muted">No hay transacciones registradas para esta cuenta.</div>
         ) : (
-          <Table>
-            <table className="w-full">
-              <THead>
-                <tr>
-                  <Th>Fecha</Th>
-                  <Th>Tipo</Th>
-                  <Th>Referencia</Th>
-                  <Th className="text-right">Monto</Th>
-                </tr>
-              </THead>
-              <TBody>
-                {transactions.content.map((transaction) => (
-                  <Tr key={transaction.id}>
-                    <Td>{formatDate(transaction.createdAt)}</Td>
-                    <Td>{formatTransactionType(transaction.type)}</Td>
-                    <Td>{transaction.reference}</Td>
-                    <Td
-                      className={`text-right font-mono font-semibold ${
-                        transaction.type === "DEPOSIT" || transaction.type === "TRANSFER_CREDIT" ? "text-success" : "text-danger"
-                      }`}
-                    >
-                      {formatCurrency(transaction.amount, account.currency)}
-                    </Td>
-                  </Tr>
-                ))}
-              </TBody>
-            </table>
-          </Table>
+          <TransactionHistoryTable currency={account.currency} transactions={transactions.content} />
         )}
       </Card>
     </div>

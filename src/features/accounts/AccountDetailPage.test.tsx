@@ -14,6 +14,6 @@ describe("AccountDetailPage", () => {
     );
 
     expect(await screen.findByText("$2,500.45")).toBeInTheDocument();
-    expect(await screen.findByText("DEP-001")).toBeInTheDocument();
+    expect((await screen.findAllByText("DEP-001")).length).toBeGreaterThan(0);
   });
 });

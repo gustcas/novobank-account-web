@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { authService } from "../../services/auth.service";
 import { configureApiAuth } from "../../services/api";
-import { refreshTokenStorage, selectedAccountStorage } from "../../utils/storage";
+import { balanceVisibilityStorage, refreshTokenStorage, selectedAccountStorage } from "../../utils/storage";
 import type { LoginRequest, User } from "../../types/auth.types";
 
 interface AuthContextValue {
@@ -23,6 +23,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessTokenState] = useState<string | null>(null);
   const [isBootstrapping, setIsBootstrapping] = useState(true);
+  const accessTokenRef = useRef<string | null>(null);
   const warningTimerRef = useRef<number | null>(null);
   const logoutTimerRef = useRef<number | null>(null);
 
@@ -48,40 +49,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const setAccessToken = (token: string | null) => {
+    accessTokenRef.current = token;
     setAccessTokenState(token);
   };
 
   const logout = async () => {
     try {
-      if (accessToken) {
+      if (accessTokenRef.current) {
         await authService.logout();
       }
     } catch {
       // Logout must always clear local auth state.
     } finally {
       setUser(null);
-      setAccessTokenState(null);
+      setAccessToken(null);
       refreshTokenStorage.clear();
       selectedAccountStorage.clearAll();
+      balanceVisibilityStorage.clearAll();
     }
   };
 
   const login = async (payload: LoginRequest) => {
     const response = await authService.login(payload);
     setUser(response.user);
-    setAccessTokenState(response.accessToken);
+    setAccessToken(response.accessToken);
     refreshTokenStorage.set(response.refreshToken);
   };
 
   useEffect(() => {
     configureApiAuth({
-      getToken: () => accessToken,
+      getToken: () => accessTokenRef.current,
       logout: () => {
         void logout();
       },
       setToken: setAccessToken
     });
-  }, [accessToken]);
+  }, []);
 
   useEffect(() => {
     const bootstrap = async () => {
@@ -93,7 +96,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       try {
         const refreshed = await authService.refresh(refreshToken);
-        setAccessTokenState(refreshed.accessToken);
+        setAccessToken(refreshed.accessToken);
         const currentUser = await authService.me();
         setUser(currentUser);
       } catch {

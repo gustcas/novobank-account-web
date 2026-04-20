@@ -10,7 +10,7 @@ const items = [
 ];
 
 export const Sidebar = () => (
-  <aside className="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white/95 backdrop-blur-sm lg:static lg:w-72 lg:border-t-0 lg:border-r lg:bg-white">
+  <aside className="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white/95 backdrop-blur-sm lg:sticky lg:top-[118px] lg:h-[calc(100vh-118px)] lg:w-72 lg:self-start lg:border-t-0 lg:border-r lg:bg-white">
     <nav className="grid grid-cols-4 gap-1 px-2 py-2 lg:flex lg:flex-col lg:gap-2 lg:p-5">
       {items.map((item) => {
         const Icon = item.icon;
