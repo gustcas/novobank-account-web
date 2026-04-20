@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { ProtectedRoute } from "../features/auth/ProtectedRoute";
 import { LoginPage } from "../features/auth/LoginPage";
+import { RegisterPage } from "../features/auth/RegisterPage";
 import { DashboardPage } from "../features/dashboard/DashboardPage";
 import { AccountsPage } from "../features/accounts/AccountsPage";
 import { AccountDetailPage } from "../features/accounts/AccountDetailPage";
@@ -12,6 +13,7 @@ export const AppRouter = () => (
   <BrowserRouter>
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
       <Route element={<ProtectedRoute />}>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />

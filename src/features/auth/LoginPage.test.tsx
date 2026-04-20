@@ -11,7 +11,7 @@ describe("LoginPage", () => {
   it("should_render_email_and_password_fields", () => {
     renderWithProviders(<LoginPage />);
     expect(screen.getByLabelText(/correo electronico/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/contrasena/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("********")).toBeInTheDocument();
   });
 
   it("should_show_validation_error_when_email_is_invalid", async () => {
@@ -26,7 +26,7 @@ describe("LoginPage", () => {
     const user = userEvent.setup();
     renderWithProviders(<LoginPage />);
     await user.type(screen.getByLabelText(/correo electronico/i), "usuario@novobanco.com");
-    await user.type(screen.getByLabelText(/contrasena/i), "123");
+    await user.type(screen.getByPlaceholderText("********"), "123");
     await user.click(screen.getByRole("button", { name: /ingresar/i }));
     expect(await screen.findByText(/al menos 8 caracteres/i)).toBeInTheDocument();
   });
@@ -35,7 +35,7 @@ describe("LoginPage", () => {
     const user = userEvent.setup();
     renderWithProviders(<LoginPage />);
     await user.type(screen.getByLabelText(/correo electronico/i), "usuario@novobanco.com");
-    await user.type(screen.getByLabelText(/contrasena/i), "Password123!");
+    await user.type(screen.getByPlaceholderText("********"), "Password123!");
     await user.click(screen.getByRole("button", { name: /ingresar/i }));
     await waitFor(() => expect(sessionStorage.getItem("novobank_refresh_token")).toBe("refresh-token"));
   });
@@ -44,7 +44,7 @@ describe("LoginPage", () => {
     const user = userEvent.setup();
     renderWithProviders(<LoginPage />);
     await user.type(screen.getByLabelText(/correo electronico/i), "usuario@novobanco.com");
-    await user.type(screen.getByLabelText(/contrasena/i), "incorrecta");
+    await user.type(screen.getByPlaceholderText("********"), "incorrecta");
     await user.click(screen.getByRole("button", { name: /ingresar/i }));
     expect(await screen.findByText(/credenciales invalidas/i)).toBeInTheDocument();
   });
@@ -58,7 +58,7 @@ describe("LoginPage", () => {
       </Routes>
     );
     await user.type(screen.getByLabelText(/correo electronico/i), "usuario@novobanco.com");
-    await user.type(screen.getByLabelText(/contrasena/i), "Password123!");
+    await user.type(screen.getByPlaceholderText("********"), "Password123!");
     await user.click(screen.getByRole("button", { name: /ingresar/i }));
     expect(await screen.findByText("Dashboard")).toBeInTheDocument();
   });
@@ -84,7 +84,7 @@ describe("LoginPage", () => {
     const user = userEvent.setup();
     renderWithProviders(<LoginPage />);
     await user.type(screen.getByLabelText(/correo electronico/i), "usuario@novobanco.com");
-    await user.type(screen.getByLabelText(/contrasena/i), "Password123!");
+    await user.type(screen.getByPlaceholderText("********"), "Password123!");
     await user.click(screen.getByRole("button", { name: /ingresar/i }));
     await waitFor(() => expect(screen.getByRole("button", { name: /ingresar/i })).toBeDisabled());
   });

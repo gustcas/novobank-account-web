@@ -8,6 +8,6 @@ describe("AccountsPage", () => {
     sessionStorage.setItem("novobank_refresh_token", "refresh-token");
     renderWithProviders(<AccountsPage />);
     expect(await screen.findByText("Nueva Cuenta")).toBeInTheDocument();
-    expect(await screen.findByText("Ahorros")).toBeInTheDocument();
+    expect((await screen.findAllByText("Ahorros")).length).toBeGreaterThan(0);
   });
 });

@@ -1,54 +1,79 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import axios from "axios";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff } from "lucide-react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { Alert } from "../../components/ui/Alert";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
-import { useAuth } from "./AuthContext";
+import { authService } from "../../services/auth.service";
 
-const loginSchema = z.object({
+const registerSchema = z.object({
+  fullName: z.string().min(3, "Ingresa el nombre completo."),
   email: z.string().email("Ingresa un correo valido."),
-  password: z.string().min(8, "La contrasena debe tener al menos 8 caracteres.")
+  password: z
+    .string()
+    .min(8, "La contrasena debe tener al menos 8 caracteres.")
+    .regex(/[A-Z]/, "La contrasena debe incluir una mayuscula.")
+    .regex(/[a-z]/, "La contrasena debe incluir una minuscula.")
+    .regex(/[0-9]/, "La contrasena debe incluir un numero.")
+    .regex(/[^A-Za-z0-9]/, "La contrasena debe incluir un caracter especial.")
 });
 
-type LoginFormValues = z.infer<typeof loginSchema>;
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
-export const LoginPage = () => {
+const generateCustomerId = () => {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (character) => {
+    const random = Math.floor(Math.random() * 16);
+    const value = character === "x" ? random : (random & 0x3) | 0x8;
+    return value.toString(16);
+  });
+};
+
+export const RegisterPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { login } = useAuth();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const successMessage = (location.state as { registrationSuccess?: string } | null)?.registrationSuccess ?? null;
+  const customerId = useMemo(() => generateCustomerId(), []);
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting }
-  } = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+  } = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
+      fullName: "",
       email: "",
       password: ""
     }
   });
 
-  const onSubmit = async (values: LoginFormValues) => {
+  const onSubmit = async (values: RegisterFormValues) => {
     try {
       setErrorMessage(null);
-      await login(values);
-      const next = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? "/dashboard";
-      navigate(next, { replace: true });
+      await authService.register({
+        ...values,
+        customerId
+      });
+      navigate("/login", {
+        replace: true,
+        state: {
+          registrationSuccess: `Registro completado para ${values.email}. Ahora puedes iniciar sesion.`
+        }
+      });
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        setErrorMessage(error.response?.data?.detail ?? "No fue posible iniciar sesion.");
+        setErrorMessage(error.response?.data?.detail ?? "No fue posible completar el registro.");
         return;
       }
 
-      setErrorMessage("No fue posible iniciar sesion.");
+      setErrorMessage("No fue posible completar el registro.");
     }
   };
 
@@ -67,21 +92,21 @@ export const LoginPage = () => {
               <h1 className="text-3xl font-black tracking-tight text-slate-600 sm:text-4xl">
                 NovoBanco<span className="text-accent">.</span>
               </h1>
-              <p className="mt-3 text-sm text-text-muted">Acceso seguro para gestion bancaria empresarial</p>
+              <p className="mt-3 text-sm text-text-muted">Crea tu acceso seguro para gestion bancaria empresarial</p>
             </div>
 
             <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
-              {successMessage ? <Alert variant="success">{successMessage}</Alert> : null}
               {errorMessage ? <Alert variant="error">{errorMessage}</Alert> : null}
+              <Input label="Nombre completo" placeholder="Juan Perez" error={errors.fullName?.message} {...register("fullName")} />
               <Input label="Correo electronico" placeholder="juan.perez@novobanco.com" error={errors.email?.message} {...register("email")} />
-              <label className="flex flex-col gap-1" htmlFor="login-password">
+              <label className="flex flex-col gap-1" htmlFor="register-password">
                 <span className="text-sm font-medium text-text-main">Contraseña</span>
                 <div className="relative">
                   <input
                     autoComplete="off"
                     className="w-full rounded-md border border-border bg-surface px-3 py-2 pr-11 text-text-main placeholder:text-text-muted shadow-sm transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent"
-                    id="login-password"
-                    placeholder="********"
+                    id="register-password"
+                    placeholder="Password123!"
                     type={isPasswordVisible ? "text" : "password"}
                     {...register("password")}
                   />
@@ -97,13 +122,13 @@ export const LoginPage = () => {
                 {errors.password?.message ? <span className="mt-1 text-sm text-danger">{errors.password.message}</span> : null}
               </label>
               <Button className="w-full" type="submit" variant="accent" isLoading={isSubmitting}>
-                Ingresar
+                Registrarme
               </Button>
             </form>
 
             <div className="mt-4 text-right">
-              <Link className="text-sm font-semibold text-accent underline underline-offset-2" to="/register">
-                Registrate
+              <Link className="text-sm font-semibold text-accent underline underline-offset-2" to="/login">
+                Volver al login
               </Link>
             </div>
           </div>

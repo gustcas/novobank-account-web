@@ -17,20 +17,39 @@ const toTargetOrigin = (rawUrl: string | undefined, fallback: string) => {
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
+  const authTarget = toTargetOrigin(env.VITE_AUTH_API_URL, "http://localhost:8081");
+  const accountsTarget = toTargetOrigin(env.VITE_ACCOUNTS_API_URL, "http://localhost:8080");
+
+  const configureProxyOrigin = (target: string) => (proxy: {
+    on: (
+      event: "proxyReq",
+      handler: (proxyReq: { setHeader: (name: string, value: string) => void }) => void
+    ) => void;
+  }) => {
+    proxy.on("proxyReq", (proxyReq) => {
+      proxyReq.setHeader("origin", target);
+      proxyReq.setHeader("referer", target);
+    });
+  };
 
   return {
     plugins: [react()],
     server: {
+      host: true,
+      port: 5173,
+      allowedHosts: ["meal-roster-prozac-attributes.trycloudflare.com", ".trycloudflare.com"],
       proxy: {
         "/auth-api": {
-          target: toTargetOrigin(env.VITE_AUTH_API_URL, "http://localhost:8081"),
+          target: authTarget,
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/auth-api/, "")
+          rewrite: (path) => path.replace(/^\/auth-api/, ""),
+          configure: configureProxyOrigin(authTarget)
         },
         "/accounts-api": {
-          target: toTargetOrigin(env.VITE_ACCOUNTS_API_URL, "http://localhost:8080"),
+          target: accountsTarget,
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/accounts-api/, "")
+          rewrite: (path) => path.replace(/^\/accounts-api/, ""),
+          configure: configureProxyOrigin(accountsTarget)
         }
       }
     },

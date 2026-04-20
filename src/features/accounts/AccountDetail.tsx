@@ -55,14 +55,14 @@ export const AccountDetail = ({ account, transactions, onDeposit, onWithdraw, on
           <p className="text-sm text-text-muted">Saldo disponible</p>
           <p className="mt-2 font-mono text-4xl font-bold text-accent">{isBalanceVisible ? formatCurrency(account.balance, account.currency) : "*****"}</p>
         </div>
-        <div className="flex flex-wrap gap-3">
-          <Button variant="accent" onClick={onDeposit}>
+        <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-3">
+          <Button className="h-9 w-full px-2 text-xs sm:h-10 sm:w-auto sm:px-4 sm:text-base" variant="accent" onClick={onDeposit}>
             Depositar
           </Button>
-          <Button variant="secondary" onClick={onTransfer}>
+          <Button className="h-9 w-full px-2 text-xs sm:h-10 sm:w-auto sm:px-4 sm:text-base" variant="secondary" onClick={onTransfer}>
             Transferir
           </Button>
-          <Button variant="primary" onClick={onWithdraw}>
+          <Button className="h-9 w-full px-2 text-xs sm:h-10 sm:w-auto sm:px-4 sm:text-base" variant="primary" onClick={onWithdraw}>
             Retirar
           </Button>
         </div>

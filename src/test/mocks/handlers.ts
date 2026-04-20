@@ -50,6 +50,30 @@ const transactions = {
 };
 
 export const handlers = [
+  http.post("http://localhost:8081/api/v1/auth/register", async ({ request }) => {
+    const body = (await request.json()) as {
+      email: string;
+      password: string;
+      fullName: string;
+      customerId: string;
+    };
+
+    if (!body.email || !body.password || !body.fullName || !body.customerId) {
+      return HttpResponse.json({ detail: "Datos de registro incompletos." }, { status: 422 });
+    }
+
+    return HttpResponse.json({
+      accessToken: "register-access-token",
+      refreshToken: "register-refresh-token",
+      expiresIn: 300,
+      user: {
+        id: "user-2",
+        email: body.email,
+        fullName: body.fullName,
+        customerId: body.customerId
+      }
+    });
+  }),
   http.post("http://localhost:8081/api/v1/auth/login", async ({ request }) => {
     const body = (await request.json()) as { email: string; password: string };
 
