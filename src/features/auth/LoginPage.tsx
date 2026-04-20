@@ -64,6 +64,11 @@ export const LoginPage = () => {
 
           <div className="mx-auto w-full max-w-md">
             <div className="mb-8 text-center sm:mb-10">
+              <div className="mb-6 flex justify-center lg:hidden">
+                <div className="flex h-20 w-20 items-center justify-center bg-[#f7931a] shadow-sm sm:h-24 sm:w-24">
+                  <img alt="NovoBanco" className="h-10 w-10 object-contain sm:h-12 sm:w-12" src="/novobank-mark.svg" />
+                </div>
+              </div>
               <h1 className="text-3xl font-black tracking-tight text-slate-600 sm:text-4xl">
                 NovoBanco<span className="text-accent">.</span>
               </h1>
